@@ -27,11 +27,12 @@ dr_agent_prompt = PromptTemplate(
 probing_instruction = """What is the next possible movie I would like to watch next? """
 
 probe_agent_prompt = PromptTemplate(
-                            template=probing_instruction,
+                            input_variables=[],
+                            template=probing_instruction
                             )
 
 ### actor_search
-actor_search_instruction = """You will act as an information gatherer. You will be provided with a movie's title and its year of release. Your task is to find and list the names of the main actors, separating each name with a comma.
+actor_search_instruction = """You will act as an information gatherer. You will be provided with a movie's title and its year of release. Your task is to find and list the names of up to three main actors, separating each name with '|'. For example, in the format of 'A|B|C'.
 The movie's title {title} and the year of release {year}."""
 
 actor_search_prompt = PromptTemplate(

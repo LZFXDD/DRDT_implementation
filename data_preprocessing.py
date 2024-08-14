@@ -1,5 +1,12 @@
 import pandas as pd
 
+import openai
+
+# openai_api设置
+openai.api_key = 'sk-fph6emDpXF4gpDqOFe827a075561421d81C4442c5e489d37'
+openai.api_base = 'https://free.gpt.ge/v1'
+
+
 movies = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\movies.csv', encoding='utf-8')
 ratings = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\ratings.csv', encoding='utf-8')
 ratings = ratings.iloc[:1000000]
@@ -19,7 +26,10 @@ def extract_title_year(text):
 
 for row in movies.itertuples(index=False):
     movieId, title, genres = row
+    # actors = agent.actor_generation(movieId)
     movie_info[movieId] = {'title': extract_title_year(title)[0], 'year': extract_title_year(title)[1] ,'genres': genres.split('|')}
+
+print(movie_info[1])
 
 ### 处理user_history
 groups = ratings.groupby('userId')
@@ -36,3 +46,4 @@ for name, group in groups:
 
     user_history[name] = [user_movies, user_ratings]
 
+print("success")
