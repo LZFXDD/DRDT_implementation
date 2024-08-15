@@ -13,8 +13,8 @@ ratings = ratings.iloc[:1000000]
 
 movie_info = dict()
 user_history = dict()
-
 ### 处理movie_info
+
 def extract_title_year(text):
     title = text.split('(')[0].strip()
     if title.endswith(', The'):
@@ -26,10 +26,7 @@ def extract_title_year(text):
 
 for row in movies.itertuples(index=False):
     movieId, title, genres = row
-    # actors = agent.actor_generation(movieId)
     movie_info[movieId] = {'title': extract_title_year(title)[0], 'year': extract_title_year(title)[1] ,'genres': genres.split('|')}
-
-print(movie_info[1])
 
 ### 处理user_history
 groups = ratings.groupby('userId')
@@ -46,4 +43,3 @@ for name, group in groups:
 
     user_history[name] = [user_movies, user_ratings]
 
-print("success")

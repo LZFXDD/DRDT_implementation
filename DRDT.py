@@ -11,6 +11,7 @@ train_times = 10
 
 class DRDT:
     def __init__(self,
+                user_id: int,
                  ### prompt
                 DT_agent_prompt: PromptTemplate = dt_agent_prompt,
                 DR_agent_prompt: PromptTemplate = dr_agent_prompt,
@@ -43,17 +44,84 @@ class DRDT:
         self.DR_llm = DR_llm
         self.PROBE_llm = PROBE_llm
 
+        ### 运行步数
+        self.step_n: int = 1
+
+        ### 基本信息
+        self.user_id = user_id
+        self.history = user_history
+        self.user_history = user_history[user_id]
+        self.length = len(user_history[user_id][0])
+        self.movie_info = movie_info
+
+        ### 循环记录
+        self.scratchpad = ''
+    ### 循环
+    def run(self):
+        if self.step_n <= train_times:
+            self.scratchpad += f"""---------- Loop {self.step_n} ----------"""
+            self.scratchpad += '\n'
+            self.step()
+            print(self.scratchpad)
+
+        self.step_n += 1
+
+    def step(self):
+        ### divigent thinking
+        self.scratchpad += self.DT_build_agent_prompt()
+        self.scratchpad += '\n'
+        self.scratchpad += self.prompt_DT()
+        self.scratchpad += '\n'
+        ### probing
+        self.scratchpad += self.PROBE_build_agent_prompt()
+        self.scratchpad += '\n'
+        self.scratchpad += self.prompt_PROBE()
+        self.scratchpad += '\n'
+        ### dynamic reflection
+        self.scratchpad += self.DR_build_agent_prompt()
+        self.scratchpad += '\n'
+        self.scratchpad += self.prompt_DR()
+        self.scratchpad += '\n'
+
     ### agent_prompt
     def DT_build_agent_prompt(self) -> str:
-        return self.DT_agent_prompt(
+        watched_movies = []
+        sample_watched_movies = []
+        for movie_id in self.user_history[0][: self.length - train_times + self.step_n]:
+            watched_movies.append(self.movie_info[movie_id]['title'])
 
+        user_history = self.user_history[0][: self.length - train_times + self.step_n]
+        last_movie = user_history[-1]
+        next_movie = self.movie_info[self.user_history[0][self.length - train_times + self.step_n]]
+
+        for history in self.history.values():
+            history = history[0]
+            if last_movie in history and history.index(last_movie) >= self.length - train_times + self.step_n and last_movie != history[-1]:
+                sample_watched_movies_id = history[history.index(last_movie) - self.length + train_times - self.step_n + 1: history.index(last_movie) + 1]
+                candidate = history[history.index(last_movie) + 1]
+                break
+
+        for movie_id in sample_watched_movies_id:
+            sample_watched_movies.append(self.movie_info[movie_id]['title'])
+
+        candidates = [candidate, next_movie]
+        answer = [next_movie, candidate]
+
+        return self.DT_agent_prompt.format(
+            sample_watched_movies='',
+            candidates=candidates,
+            answer=answer,
+            watched_movies=watched_movies
         )
 
     def DR_build_agent_prompt(self) -> str:
-        return self.DR_agent_prompt()
+        return self.DR_agent_prompt.format(
+            answer=self.movie_info[self.user_history[0][self.length - train_times + self.step_n]],
+            rating=self.user_history[1][self.length - train_times + self.step_n]
+        )
 
     def PROBE_build_agent_prompt(self) -> str:
-        return self.PROBE_agent_prompt()
+        return self.PROBE_agent_prompt.format()
 
     ### 调用llm
     def prompt_DT(self) -> str:
@@ -65,13 +133,6 @@ class DRDT:
     def prompt_PROBE(self) -> str:
         return format_step(self.PROBE_llm(self.PROBE_build_agent_prompt()))
 
-    ### 一个loop
-    def step(self) -> None:
-        pass
-
-    ### 训练
-    def run(self, times: int = train_times) -> None:
-        pass
 ### 字符串处理 ###
 def format_step(step: str) -> str:
 

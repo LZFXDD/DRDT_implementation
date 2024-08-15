@@ -1,9 +1,15 @@
 import os
+import openai
+
+# openai_api设置
+openai.api_key = 'sk-fph6emDpXF4gpDqOFe827a075561421d81C4442c5e489d37'
+os.environ['OPENAI_API_KEY'] = openai.api_key
+openai.api_base = 'https://free.gpt.ge/v1'
 
 from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
 from prompts import actor_search_prompt
-from data_preprocessing import movie_info, user_history
+from transfer import movie_basic_info
 
 class Actor_search:
     def __init__(self,
@@ -23,12 +29,15 @@ class Actor_search:
 
     def _build_agent_prompt(self) -> str:
         return self.agent_prompt.format(
-            title=movie_info[self.movieId]['title'],
-            year=movie_info[self.movieId]['year'],
+            title=movie_basic_info[self.movieId]['title'],
+            year=movie_basic_info[self.movieId]['year'],
         )
-
-
-
 ### 字符串处理 ###
 def format_string(string: str) -> str:
     return string.strip().strip('\n').replace('\n','')
+
+### 程序执行
+agent = Actor_search()
+print(agent.actor_generation(2))
+
+
