@@ -69,14 +69,14 @@ class DRDT:
     def step(self):
         ### divigent thinking
         self.scratchpad += self.DT_build_agent_prompt()
-        self.scratchpad += '\n'
+        self.scratchpad += f'\n\n'
         self.scratchpad += self.prompt_DT()
-        self.scratchpad += '\n'
+        self.scratchpad += f'\n'
         ### probing
-        self.scratchpad += self.PROBE_build_agent_prompt()
-        self.scratchpad += '\n'
-        self.scratchpad += self.prompt_PROBE()
-        self.scratchpad += '\n'
+        # self.scratchpad += self.PROBE_build_agent_prompt()
+        # self.scratchpad += f'\n'
+        # self.scratchpad += self.prompt_PROBE()
+        # self.scratchpad += f'\n'
         ### dynamic reflection
         self.scratchpad += self.DR_build_agent_prompt()
         self.scratchpad += '\n'
@@ -92,7 +92,7 @@ class DRDT:
 
         user_history = self.user_history[0][: self.length - train_times + self.step_n]
         last_movie = user_history[-1]
-        next_movie = self.movie_info[self.user_history[0][self.length - train_times + self.step_n]]
+        next_movie = self.movie_info[self.user_history[0][self.length - train_times + self.step_n]]['title']
 
         for history in self.history.values():
             history = history[0]
@@ -104,11 +104,11 @@ class DRDT:
         for movie_id in sample_watched_movies_id:
             sample_watched_movies.append(self.movie_info[movie_id]['title'])
 
-        candidates = [candidate, next_movie]
-        answer = [next_movie, candidate]
+        candidates = [movie_info[candidate]['title'], next_movie]
+        answer = [next_movie, movie_info[candidate]['title']]
 
         return self.DT_agent_prompt.format(
-            sample_watched_movies='',
+            sample_watched_movies=sample_watched_movies,
             candidates=candidates,
             answer=answer,
             watched_movies=watched_movies
@@ -116,7 +116,7 @@ class DRDT:
 
     def DR_build_agent_prompt(self) -> str:
         return self.DR_agent_prompt.format(
-            answer=self.movie_info[self.user_history[0][self.length - train_times + self.step_n]],
+            answer=self.movie_info[self.user_history[0][self.length - train_times + self.step_n]]['title'],
             rating=self.user_history[1][self.length - train_times + self.step_n]
         )
 

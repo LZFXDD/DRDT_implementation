@@ -2,8 +2,16 @@ from langchain.prompts import PromptTemplate
 
 ### DT ###
 divergent_thinking_instruction = """There is another user watched movie {sample_watched_movies}. Given the candidates {candidates}, the answer is {answer}.
+
 I have watched the following movies in the past in order: {watched_movies}.
-Could you please analysis the user preference according to the movie's year of release, genres and actors?
+
+Here is an example of the user's preference analysis format:
+Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres and actors.
+The preferences are:
+Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
+Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
+
+Could you please analyze the user's preference according to the movie's genres and actors in the given format?
 """
 
 dt_agent_prompt = PromptTemplate(
