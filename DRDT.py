@@ -53,7 +53,7 @@ class DRDT:
         self.user_history = user_history[user_id]
         self.length = len(user_history[user_id][0])
         self.movie_info = movie_info
-
+        self.analysis = ''
         ### 循环记录
         self.scratchpad = ''
     ### 循环
@@ -73,6 +73,7 @@ class DRDT:
         self.scratchpad += self.DT_build_agent_prompt()
         self.scratchpad += '\n\n'
         self.scratchpad += self.prompt_DT() + '\n'
+        self.analysis = self.prompt_DT()
         ### probing
         self.scratchpad += "PROBING:\n"
         self.scratchpad += self.PROBE_build_agent_prompt()
@@ -85,6 +86,7 @@ class DRDT:
         self.scratchpad += '\n'
         self.scratchpad += self.prompt_DR()
         self.scratchpad += '\n'
+        self.analysis = self.prompt_DR()
 
     ### agent_prompt
     def DT_build_agent_prompt(self) -> str:
@@ -114,17 +116,20 @@ class DRDT:
             sample_watched_movies=sample_watched_movies,
             candidates=candidates,
             answer=answer,
-            watched_movies=watched_movies
+            watched_movies=watched_movies,
+            preference_analysis=self.analysis
         )
 
     def DR_build_agent_prompt(self) -> str:
         return self.DR_agent_prompt.format(
             answer=self.movie_info[self.user_history[0][self.length - train_times + self.step_n]]['title'],
-            rating=self.user_history[1][self.length - train_times + self.step_n]
+            rating=self.user_history[1][self.length - train_times + self.step_n],
+            preferences_analysis=self.analysis,
+            predict_movies=self.prompt_PROBE()
         )
 
     def PROBE_build_agent_prompt(self) -> str:
-        return self.PROBE_agent_prompt.format(preferences_analysis=self.prompt_DT())
+        return self.PROBE_agent_prompt.format(preferences_analysis=self.analysis)
 
     ### 调用llm
     def prompt_DT(self) -> str:

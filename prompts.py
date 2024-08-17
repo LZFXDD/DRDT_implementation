@@ -1,38 +1,44 @@
 from langchain.prompts import PromptTemplate
 
 ### DT ###
+
+# Here is an example of the user's preference analysis format:
+# Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres and actors.
+# The preferences are:
+# Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
+# Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
+
 divergent_thinking_instruction = """There is another user watched movie {sample_watched_movies}. Given the candidates {candidates}, the answer is {answer}.
 
 I have watched the following movies in the past in order: {watched_movies}.
+Here is the user's preference analysis: {preference_analysis}
 
-Here is an example of the user's preference analysis format:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres and actors.
-The preferences are:
-Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
-Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
-
-Could you please analyze the user's preference according to the movie's genres and actors in the given format?
+Could you please analyze the user's preference according to the movie's genres and actors?
 """
 
 dt_agent_prompt = PromptTemplate(
-                            input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies'],
+                            input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies', 'preference_analysis'],
                             template=divergent_thinking_instruction,
                             )
 
 ### DR_reflection ###
-dynamic_reflection_instruction = """The answer is {answer}, is that consistence with the previous preferences?
+dynamic_reflection_instruction = """Here is the user's preferences analysis in terms of genres and actors:{preferences_analysis} 
+Here is the next possible movie you provided: {predict_movies}
+
+The answer is {answer}, is that consistence with the previous preferences?
 The user's rating for this movie is {rating} out of 5. From what aspect will you recommend this movie to user?
 Update your preference analysis on this user.
 """
 
 dr_agent_prompt = PromptTemplate(
-                            input_variables=['answer', 'rating'],
+                            input_variables=['answer', 'rating', 'preferences_analysis', 'predict_movies'],
                             template=dynamic_reflection_instruction,
                             )
 
 
 ### DR_probing ###
-probing_instruction = """Here is the user's preferences analysis in terms of genres and actors:{preferences_analysis}
+probing_instruction = """Here is the user's preferences analysis in terms of genres and actors:
+{preferences_analysis}
 
 What is the next possible movie I would like to watch next? """
 
