@@ -58,26 +58,29 @@ class DRDT:
         self.scratchpad = ''
     ### 循环
     def run(self):
-        if self.step_n <= train_times:
-            self.scratchpad += f"""---------- Loop {self.step_n} ----------"""
-            self.scratchpad += '\n'
-            self.step()
-            print(self.scratchpad)
-
+        self.scratchpad += f"""-------------------- Loop {self.step_n} --------------------"""
+        self.scratchpad += '\n'
+        self.step()
         self.step_n += 1
+        if self.step_n < train_times:
+            self.run()
+        else:
+            print(self.scratchpad)
 
     def step(self):
         ### divigent thinking
+        self.scratchpad += "DIVERGENT THINKING:\n"
         self.scratchpad += self.DT_build_agent_prompt()
-        self.scratchpad += f'\n\n'
-        self.scratchpad += self.prompt_DT()
-        self.scratchpad += f'\n'
+        self.scratchpad += '\n\n'
+        self.scratchpad += self.prompt_DT() + '\n'
         ### probing
-        # self.scratchpad += self.PROBE_build_agent_prompt()
-        # self.scratchpad += f'\n'
-        # self.scratchpad += self.prompt_PROBE()
-        # self.scratchpad += f'\n'
+        self.scratchpad += "PROBING:\n"
+        self.scratchpad += self.PROBE_build_agent_prompt()
+        self.scratchpad += '\n'
+        self.scratchpad += self.prompt_PROBE()
+        self.scratchpad += '\n'
         ### dynamic reflection
+        self.scratchpad += "DYNAMIC REFLECTION:\n"
         self.scratchpad += self.DR_build_agent_prompt()
         self.scratchpad += '\n'
         self.scratchpad += self.prompt_DR()
@@ -121,7 +124,7 @@ class DRDT:
         )
 
     def PROBE_build_agent_prompt(self) -> str:
-        return self.PROBE_agent_prompt.format()
+        return self.PROBE_agent_prompt.format(preferences_analysis=self.prompt_DT())
 
     ### 调用llm
     def prompt_DT(self) -> str:

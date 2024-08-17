@@ -32,10 +32,12 @@ dr_agent_prompt = PromptTemplate(
 
 
 ### DR_probing ###
-probing_instruction = """What is the next possible movie I would like to watch next? """
+probing_instruction = """Here is the user's preferences analysis in terms of genres and actors:{preferences_analysis}
+
+What is the next possible movie I would like to watch next? """
 
 probe_agent_prompt = PromptTemplate(
-                            input_variables=[],
+                            input_variables=['preferences_analysis'],
                             template=probing_instruction
                             )
 
