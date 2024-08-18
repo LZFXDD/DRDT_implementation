@@ -72,8 +72,10 @@ class DRDT:
         self.scratchpad += "DIVERGENT THINKING:\n"
         self.scratchpad += self.DT_build_agent_prompt()
         self.scratchpad += '\n\n'
-        self.scratchpad += self.prompt_DT() + '\n'
-        self.analysis = self.prompt_DT()
+
+        prompt_DT = self.prompt_DT()
+        self.scratchpad += prompt_DT + '\n'
+        self.analysis = prompt_DT
         ### probing
         self.scratchpad += "PROBING:\n"
         self.scratchpad += self.PROBE_build_agent_prompt()
@@ -84,9 +86,11 @@ class DRDT:
         self.scratchpad += "DYNAMIC REFLECTION:\n"
         self.scratchpad += self.DR_build_agent_prompt()
         self.scratchpad += '\n'
-        self.scratchpad += self.prompt_DR()
+
+        prompt_DR = self.prompt_DT()
+        self.scratchpad += prompt_DR
         self.scratchpad += '\n'
-        self.analysis = self.prompt_DR()
+        self.analysis = prompt_DR
 
     ### agent_prompt
     def DT_build_agent_prompt(self) -> str:

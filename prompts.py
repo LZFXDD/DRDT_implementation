@@ -11,9 +11,11 @@ from langchain.prompts import PromptTemplate
 divergent_thinking_instruction = """There is another user watched movie {sample_watched_movies}. Given the candidates {candidates}, the answer is {answer}.
 
 I have watched the following movies in the past in order: {watched_movies}.
-Here is the user's preference analysis: {preference_analysis}
 
-Could you please analyze the user's preference according to the movie's genres and actors?
+Here is the user's preference analysis:
+{preference_analysis}
+
+Could you please analyze the user's preference according to the movie's genres, actors and directors?
 """
 
 dt_agent_prompt = PromptTemplate(
@@ -22,8 +24,11 @@ dt_agent_prompt = PromptTemplate(
                             )
 
 ### DR_reflection ###
-dynamic_reflection_instruction = """Here is the user's preferences analysis in terms of genres and actors:{preferences_analysis} 
-Here is the next possible movie you provided: {predict_movies}
+dynamic_reflection_instruction = """Here is the user's preferences analysis in terms of genres, actors and directors:
+{preferences_analysis}
+ 
+Here is the next possible movie you provided:
+{predict_movies}
 
 The answer is {answer}, is that consistence with the previous preferences?
 The user's rating for this movie is {rating} out of 5. From what aspect will you recommend this movie to user?
@@ -37,7 +42,7 @@ dr_agent_prompt = PromptTemplate(
 
 
 ### DR_probing ###
-probing_instruction = """Here is the user's preferences analysis in terms of genres and actors:
+probing_instruction = """Here is the user's preferences analysis in terms of genres, actors and directors:
 {preferences_analysis}
 
 What is the next possible movie I would like to watch next? """
