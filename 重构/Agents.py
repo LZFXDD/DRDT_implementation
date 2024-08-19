@@ -64,6 +64,7 @@ class DRDT_Agents:
         self.scratchpad += '\n'
         self.step()
         self.step_n += 1
+
         if self.step_n < train_times:
             self.run()
         else:
