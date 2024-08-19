@@ -62,7 +62,7 @@ Here is my preferences analysis:
 Could you update my preferences analysis according to the list provided, taking into account the movie's genres, actors and directors?
 """
 dt_agent_prompt = PromptTemplate(
-    input_variabls=['watched_movies', 'preferences_analysis',],
+    input_variables=['watched_movies', 'preferences_analysis',],
     template=divergent_thinkng_instruction,
     )
 
@@ -77,7 +77,7 @@ Options: {candidates}
 Among the options provided, which film would I be inclined to watch next?
 """
 probe_agent_prompt = PromptTemplate(
-    input_variabls=['preferences_analysis', 'candidates'],
+    input_variables=['preferences_analysis', 'candidates'],
     template=probing_instruction,
 )
 

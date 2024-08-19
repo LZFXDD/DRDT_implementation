@@ -79,18 +79,43 @@ class DRDT_Agents:
         if self.step_n < train_times - 1:
             self.run()
         else:
+            self.scratchpad += self.prediction()
+            self.scratchpad += '\n'
+
             print(self.scratchpad)
 
     def step(self) -> None:
-        if self.step_n == 1:
-            pass
-        else:
-            pass
+        ### divergent thinking
+        self.scratchpad += "DIVERGENT THINKING: \n"
+        self.scratchpad += self.DT_build_agent_prompt()
+        self.scratchpad += '\n'
+
+        prompt_DT = self.prompt_DT()
+        self.scratchpad += prompt_DT + '\n'
+        self.preference_analysis = prompt_DT
+
+        ### probing
+        self.scratchpad += "PROBING:\n"
+        self.scratchpad += self.PROBE_build_agent_prompt()
+        self.scratchpad += '\n'
+
+        prompt_probe = self.prompt_PROBE()
+        self.scratchpad += prompt_probe + '\n'
+        self.probing_recommendation = prompt_probe
+
+        ### dynamic reflection
+        self.scratchpad += "DYNAMIC REFLECTION:\n"
+        self.scratchpad += self.DR_build_agent_prompt()
+        self.scratchpad += '\n'
+
+        prompt_DR = self.prompt_DT()
+        self.scratchpad += prompt_DR + '\n'
+        self.preference_analysis = prompt_DR
 
 
     ### 候选项集
     def candidates_selection(self, number):
-        selected_candidates_indexes = random.sample(movie_info.keys(), number)
+        selected_candidates_indexes = random.sample(list(movie_info.keys()), number)
 
         selected_candidates = [movie_info[index]['title'] for index in selected_candidates_indexes]
         return selected_candidates
@@ -100,36 +125,39 @@ class DRDT_Agents:
         length = len(user_history[self.user_id][0])
         watched_movies = [movie_info[index]['title'] for index in user_history[self.user_id][0][: length - train_times + self.step_n]]
 
-        if self.step_n == 1:
-            # 需要变量的初始化
-            sample_watched_movies = []
-            candidates = []
-
-
-            last_movieId = movie_info[user_history[self.user_id][0][-1]]
-
-            for userId, history in user_history:
-                if self.user_id != userId and last_movieId in history[0] and last_movieId != history[0][-1]:
-                    sample_watched_movies_id = history[0][: history[0].index(last_movieId) + 1]
-                    sample_watched_movies = [movie_info[index]['title'] for index in sample_watched_movies_id]
-                    candidates = self.candidates_selection(2) + movie_info[history[0][history[0].index(last_movieId) + 1]]['title']
-                    break
-
-            answer = random.choice([[candidates[2], candidates[0], candidates[1]], [candidates[2], candidates[1], candidates[0]]])
-
-            return self.collaborative_agent_prompt.format(
-                sample_watched_movies=sample_watched_movies,
-                candidates=candidates,
-                answer=answer,
-                watched_movies=watched_movies,
-                preference_analysis=self.preference_analysis
-            )
-
-        else:
-            return self.dt_agent_prompt.format(
-                watched_movies=watched_movies,
-                preferences_analysis=self.preference_analysis
-            )
+        return self.dt_agent_prompt.format(
+            watched_movies=watched_movies,
+            preferences_analysis=self.preference_analysis
+        )
+        # if self.step_n == 1:
+        #     # 需要变量的初始化
+        #     sample_watched_movies = []
+        #     candidates = self.candidates_selection(2)
+        #
+        #
+        #     last_movieId = movie_info[user_history[self.user_id][0][-1]]
+        #
+        #     for userId, history in user_history.items():
+        #         if self.user_id != userId and last_movieId in history[0] and last_movieId != history[0][-1]:
+        #             sample_watched_movies_id = history[0][: history[0].index(last_movieId) + 1]
+        #             sample_watched_movies = [movie_info[index]['title'] for index in sample_watched_movies_id]
+        #             candidates.append(movie_info[history[0][history[0].index(last_movieId) + 1]]['title'])
+        #             break
+        #
+        #     answer = random.choice([[candidates[2], candidates[0], candidates[1]], [candidates[2], candidates[1], candidates[0]]])
+        #     return self.collaborative_agent_prompt.format(
+        #         sample_watched_movies=sample_watched_movies,
+        #         candidates=candidates,
+        #         answer=answer,
+        #         watched_movies=watched_movies,
+        #         preference_analysis=self.preference_analysis
+        #     )
+        #
+        # else:
+        #     return self.dt_agent_prompt.format(
+        #         watched_movies=watched_movies,
+        #         preferences_analysis=self.preference_analysis
+        #     )
 
     def DR_build_agent_prompt(self) -> str:
         length = len(user_history[self.user_id][0])
