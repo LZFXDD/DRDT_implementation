@@ -30,7 +30,8 @@ Here is my preferences analysis:
 Could you update my preferences analysis according to the list provided, taking into account the movie's genres, actors and directors?
 """
 collaborative_agent_prompt = PromptTemplate(
-    input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies', 'preferences_analysis']
+    input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies', 'preferences_analysis'],
+    template=collaborative_info_instruction
 )
 
 ### divetgent thinking

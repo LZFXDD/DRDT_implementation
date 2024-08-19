@@ -1,4 +1,5 @@
 import os
+import random
 
 from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
@@ -37,6 +38,12 @@ class DRDT_Agents:
                      model_name='gpt-3.5-turbo',
                      model_kwargs={"stop": '\n'},
                      openai_api_key=os.environ['OPENAI_API_KEY']),
+
+                 PREDICT_llm: AnyOpenAILLM = AnyOpenAILLM(
+                     temperature=0,
+                     model_name='gpt-3.5-turbo',
+                     model_kwargs={"stop": '\n'},
+                     openai_api_key=os.environ['OPENAI_API_KEY']),
                  ):
 
         ### prompt
@@ -50,22 +57,26 @@ class DRDT_Agents:
         self.dt_llm = DT_llm
         self.dr_llm = DR_llm
         self.probe_llm = PROBE_llm
+        self.predict_llm = PREDICT_llm
+
+        ### 用户信息
+        self.user_id = user_id
+        self.preference_analysis = ''
 
         ### 基本信息
         self.step_n = 1
-        self.user_id = user_id
-        self.user_history = user_history
-        self.movie_info = movie_info
-        self.preference_analysis = ''
         self.scratchpad = ''
+        self.candidates = []
+        self.probing_recommendation = ''
 
     def run(self):
         self.scratchpad += f'------------------------------ Loop {self.step_n} ------------------------------'
         self.scratchpad += '\n'
+        self.candidates = self.candidates_selection(5)
         self.step()
         self.step_n += 1
 
-        if self.step_n < train_times:
+        if self.step_n < train_times - 1:
             self.run()
         else:
             print(self.scratchpad)
@@ -76,16 +87,74 @@ class DRDT_Agents:
         else:
             pass
 
+
+    ### 候选项集
+    def candidates_selection(self, number):
+        selected_candidates_indexes = random.sample(movie_info.keys(), number)
+
+        selected_candidates = [movie_info[index]['title'] for index in selected_candidates_indexes]
+        return selected_candidates
+
     ### agent_prompt
     def DT_build_agent_prompt(self) -> str:
-        pass
+        length = len(user_history[self.user_id][0])
+        watched_movies = [movie_info[index]['title'] for index in user_history[self.user_id][0][: length - train_times + self.step_n]]
+
+        if self.step_n == 1:
+            # 需要变量的初始化
+            sample_watched_movies = []
+            candidates = []
+
+
+            last_movieId = movie_info[user_history[self.user_id][0][-1]]
+
+            for userId, history in user_history:
+                if self.user_id != userId and last_movieId in history[0] and last_movieId != history[0][-1]:
+                    sample_watched_movies_id = history[0][: history[0].index(last_movieId) + 1]
+                    sample_watched_movies = [movie_info[index]['title'] for index in sample_watched_movies_id]
+                    candidates = self.candidates_selection(2) + movie_info[history[0][history[0].index(last_movieId) + 1]]['title']
+                    break
+
+            answer = random.choice([[candidates[2], candidates[0], candidates[1]], [candidates[2], candidates[1], candidates[0]]])
+
+            return self.collaborative_agent_prompt.format(
+                sample_watched_movies=sample_watched_movies,
+                candidates=candidates,
+                answer=answer,
+                watched_movies=watched_movies,
+                preference_analysis=self.preference_analysis
+            )
+
+        else:
+            return self.dt_agent_prompt.format(
+                watched_movies=watched_movies,
+                preferences_analysis=self.preference_analysis
+            )
 
     def DR_build_agent_prompt(self) -> str:
-        pass
+        length = len(user_history[self.user_id][0])
+
+        return self.dr_agent_prompt.format(
+            preference_analysis=self.preference_analysis,
+            recommendation=self.probing_recommendation,
+            candidates=self.candidates + [movie_info[user_history[self.user_id][0][length - train_times + self.step_n]]['title']],
+            answer=movie_info[user_history[self.user_id][0][length - train_times + self.step_n]]['title'],
+            rating=user_history[self.user_id][1][length - train_times + self.step_n]
+        )
 
     def PROBE_build_agent_prompt(self) -> str:
-        pass
+        length = len(user_history[self.user_id][0])
 
+        return self.probe_agent_prompt.format(
+            preference_analysis=self.preference_analysis,
+            candidates=self.candidates + [movie_info[user_history[self.user_id][0][length - train_times + self.step_n]]['title']]
+        )
+
+    def PREDICT_build_agent_prompt(self) -> str:
+        return self.predict_agent_prompt.format(
+            preference_analysis=self.preference_analysis,
+            candidates=self.candidates + [movie_info[user_history[0][-1]]['title']]
+        )
 
     ### 调用llm
     def prompt_DT(self) -> str:
@@ -96,6 +165,9 @@ class DRDT_Agents:
 
     def prompt_DR(self) -> str:
         return format_step(self.dr_llm(self.DR_build_agent_prompt()))
+
+    def prediction(self) -> str:
+        return format_step(self.predict_llm(self.PREDICT_build_agent_prompt()))
 
 ### 字符串处理
 def format_step(step: str) -> str:
