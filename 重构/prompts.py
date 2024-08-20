@@ -1,32 +1,27 @@
 from langchain.prompts import PromptTemplate
 
 ### first loop: collaborative information
-collaborative_info_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies. Based on the user's viewing history, you should generate a preferences analysis in the following format.
+collaborative_info_instruction = """As an AI agent, you are tasked with analyzing and refining the movie preferences of me.
 
-Format:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-The preferences are:
-Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
-Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
-Directors: ... ( Analysis on the user's preferences in terms of movie's directors )
+The format for the preferences analysis should be as follows:
+- Based on the list of movies you have watched, I can analyze your preferences in terms of movie's genres, actors, and directors.
+  Genres: [Detailed analysis of your preferences in terms of movie's genres]
+  Actors: [Detailed analysis of your preferences in terms of movie's actors]
+  Directors: [Detailed analysis of your preferences in terms of movie's directors]
 
 Example:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-Genres: Your preferences seem to lean towards science fiction, action, and mystery/thriller genres. 
-Actors: You might have a preference for actors who can deliver strong performances in action and sci-fi roles.
-Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
+Based on the list of movies Aim User has watched, I can analyze their preferences in terms of movie's genres, actors, and directors.
+Genres: Your preferences seem to lean towards science fiction, action, and mystery/thriller genres.
 
+Given the following information, please update my preferences analysis in the specified format:
 
-Given the following information, update my preferences analysis that adheres to the specified format:
+1. The watched movie list of another user for context: {sample_watched_movies}.
+2. A list of candidate movies presented to the another user: {candidates}.
+3. The outcome of a previous recommendation to the another user: the another user sorted the candidates in the order of {answer}.
+4. The watched movie list of me in the order they were watched: {watched_movies}.
+5. My current preferences analysis: {preferences_analysis}.
 
-There is another user watched movie {sample_watched_movies}. Given the candidates {candidates}, the answer is {answer}.
-
-I have watched the following list of movies in the past in this order: {watched_movies}.
-
-Here is my current preferences analysis:
-{preferences_analysis}
-
-Update my preferences analysis.
+Using the information provided, update my preferences analysis.
 """
 collaborative_agent_prompt = PromptTemplate(
     input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies', 'preferences_analysis'],
@@ -34,30 +29,24 @@ collaborative_agent_prompt = PromptTemplate(
 )
 
 ### divetgent thinking
-divergent_thinkng_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies. Based on the user's viewing history, you should generate a preferences analysis in the following format.
+divergent_thinkng_instruction = """As an AI agent, your task is to refine and update my preferences analysis based on my viewing history and the details provided.
 
-Format:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-The preferences are:
-Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
-Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
-Directors: ... ( Analysis on the user's preferences in terms of movie's directors )
+The format for the preferences analysis should be as follows:
+- Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors, and directors.
+  Genres: [Detailed analysis of the user's preferences in terms of movie's genres]
+  Actors: [Detailed analysis of the user's preferences in terms of movie's actors]
+  Directors: [Detailed analysis of the user's preferences in terms of movie's directors]
 
 Example:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-Genres: Your preferences seem to lean towards science fiction, action, and mystery/thriller genres. 
-Actors: You might have a preference for actors who can deliver strong performances in action and sci-fi roles.
-Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
+Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors, and directors.
+Genres: Your preferences seem to favor science fiction, action, and mystery/thriller genres.
 
+Given the following information, please update my preferences analysis in the specified format:
 
-Given the following information, update my preferences analysis that adheres to the specified format:
+1. My viewing history includes the following movies in the order I've watched them: {watched_movies}.
+2. My current preferences analysis is as follows: {preferences_analysis}.
 
-I have watched the following list of movies in the past in this order: {watched_movies}.
-
-Here is my current preferences analysis:
-{preferences_analysis}
-
-Update my preferences analysis.
+Perform an analysis that reflects these details and update my preferences analysis accordingly.
 """
 dt_agent_prompt = PromptTemplate(
     input_variables=['watched_movies', 'preferences_analysis',],
@@ -65,14 +54,15 @@ dt_agent_prompt = PromptTemplate(
     )
 
 ### probing
-probing_instruction = """You are an AI agent, aiming to forecast the next possible movie that I would like to watch.
+probing_instruction = """As an AI agent, your objective is to predict the next movie that I am most likely to enjoy based on my established preferences.
 
-Here is my current preferences analysis:
+Below is my current preferences analysis, which outlines my preferences in terms of genres, actors, and directors:
 {preferences_analysis}
 
-Options: {candidates}
+Considering these preferences, I am provided with the following list of movies to choose from:
+{candidates}
 
-Among the options provided, which film would I be inclined to watch next? Provide only the movie's title.
+Please utilize my preferences analysis to predict and suggest the film from the list that I am most likely to select for my next viewing experience. Return only the title of the recommended movie.
 """
 probe_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'candidates'],
@@ -80,31 +70,32 @@ probe_agent_prompt = PromptTemplate(
 )
 
 ### dynamic reflection
-dynamic_reflection_instruction = """As an AI agent, your role is to reflect upon and update the preferences analysis based on the decisions made by the AI agent and the actual selection made by me.
+dynamic_reflection_instruction = """As an AI agent, your task is to critically analyze and update the user's preferences for movies based on the user's current preferences analysis and the interaction between AI recommendations and user decisions.
 
 Preferences Analysis Format:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-The preferences are:
-Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
-Actors: ... ( Analysis on the user's preferences in terms of movie's actors )
-Directors: ... ( Analysis on the user's preferences in terms of movie's directors )
+Please provide the updated preferences analysis in the following structured format:
+- Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors, and directors.
+  Genres: [Detailed analysis of the user's preferences in terms of movie's genres]
+  Actors: [Detailed analysis of the user's preferences in terms of movie's actors]
+  Directors: [Detailed analysis of the user's preferences in terms of movie's directors]
 
 Example:
-Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
-Genres: Your preferences seem to lean towards science fiction, action, and mystery/thriller genres. 
-Actors: You might have a preference for actors who can deliver strong performances in action and sci-fi roles.
-Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
+Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors, and directors.
+Genres: Your preferences seem to favor science fiction and action, with a notable interest in mystery/thriller and drama.
 
+Given the following information, update the user's preferences analysis:
 
-Given the following information, update my preferences analysis that adheres to the specified format:
-
-Here is my current preferences analysis in terms of genres, actors and directors:
+Current Preferences Analysis:
 {preferences_analysis}
 
-{recommendation} has been selected by AI agent as the preferred choice from the list of options: {candidates}.
+AI Agent's Recommendation:
+{recommendation} was selected by the AI agent as the preferred choice from the list of options: {candidates}.
 
-My actual selection is {answer}, and I've given it a rating of {rating} out of 5.
-Refine my preferences analysis by comparing it with the current preferences analysis, taking into account the differences between the movie you recommended based on my current preferences analysis and the target movie I ended up watching. The updated preferences analysis should reflect any shifts based on the experience.
+User's Actual Selection:
+The user's actual selection was {answer}, which was rated {rating} out of 5.
+
+Analysis Request:
+Reflect on the differences between the AI agent's recommendation and the user's actual selection. Update the user's preferences analysis to reflect any shifts in preferences based on the user's experience with the selected movie. The updated analysis should include a comparison of the genres, actors, and directors that were most influential in the user's decision.
 """
 dr_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'recommendation', 'candidates', 'answer', 'rating'],
@@ -112,14 +103,15 @@ dr_agent_prompt = PromptTemplate(
 )
 
 ### prediction
-prediction_instruction = """You are an AI agent, tasked with selecting on movie from the provided list of options that I would enjoy watching according to my preferences analysis.
+prediction_instruction = """As an AI agent, your mission is to identify a movie from the given list of options that aligns with my personal preferences for film selection.
 
-Here is my current preferences analysis in terms of genres, actors and directors:
+My current preferences analysis is as follows, detailing my inclinations towards genres, actors, and directors:
 {preferences_analysis}
 
-Here is the provided list of options: {candidates}
+Here is the complete list of movies from which I would like you to choose:
+{candidates}
 
-Based on my preferences analysis, select a movie that I am most likely to watch:
+Please utilize my preferences analysis to recommend a movie that I am most likely to enjoy and select the most suitable title from the provided list.
 """
 predict_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'candidates'],

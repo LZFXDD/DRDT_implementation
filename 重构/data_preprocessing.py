@@ -2,7 +2,6 @@ import pandas as pd
 
 movies = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\movies.csv', encoding='utf-8')
 ratings = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\ratings.csv', encoding='utf-8')
-ratings = ratings.iloc[: 5000000]
 
 movie_info = dict()
 user_history = dict()
@@ -38,3 +37,4 @@ for name, group in groups:
 
     user_history[name] = [user_movies, user_ratings]
 
+print("success")

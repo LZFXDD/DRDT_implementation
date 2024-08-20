@@ -24,25 +24,21 @@ class DRDT_Agents:
                  DT_llm: AnyOpenAILLM = AnyOpenAILLM(
                     temperature=0,
                     model_name='gpt-3.5-turbo',
-                    model_kwargs={"stop": '\n'},
                     openai_api_key = os.environ['OPENAI_API_KEY']),
 
                  DR_llm: AnyOpenAILLM = AnyOpenAILLM(
                      temperature=0,
                      model_name='gpt-3.5-turbo',
-                     model_kwargs={"stop": '\n'},
                      openai_api_key=os.environ['OPENAI_API_KEY']),
 
                  PROBE_llm: AnyOpenAILLM = AnyOpenAILLM(
                      temperature=0,
                      model_name='gpt-3.5-turbo',
-                     model_kwargs={"stop": '\n'},
                      openai_api_key=os.environ['OPENAI_API_KEY']),
 
                  PREDICT_llm: AnyOpenAILLM = AnyOpenAILLM(
                      temperature=0,
                      model_name='gpt-3.5-turbo',
-                     model_kwargs={"stop": '\n'},
                      openai_api_key=os.environ['OPENAI_API_KEY']),
                  ):
 
@@ -69,6 +65,7 @@ class DRDT_Agents:
         self.candidates = []
         self.probing_recommendation = ''
 
+### 单个测试
     def run(self):
         self.scratchpad += f'------------------------------ Loop {self.step_n} ------------------------------'
         self.scratchpad += '\n'
@@ -116,9 +113,38 @@ class DRDT_Agents:
         self.scratchpad += self.DR_build_agent_prompt()
         self.scratchpad += '\n'
 
-        prompt_DR = self.prompt_DT()
+        prompt_DR = self.prompt_DR()
         self.scratchpad += prompt_DR + '\n'
         self.preference_analysis = prompt_DR
+
+### 正确率计算
+    # def run(self):
+    #     self.candidates = self.candidates_selection(5)
+    #     self.step()
+    #     self.step_n += 1
+    #
+    #     if self.step_n < train_times - 1:
+    #         self.run()
+    #     else:
+    #         return self.prediction()
+    #
+    # def step(self) -> None:
+    #     ### divergent thinking
+    #     self.preference_analysis = self.prompt_DT()
+    #
+    #     ### probing
+    #     prompt_probe = self.prompt_PROBE()
+    #
+    #     length = len(user_history[self.user_id][0])
+    #     candidates = self.candidates + [movie_info[user_history[self.user_id][0][length - train_times + self.step_n]]['title']]
+    #     for candidate in candidates:
+    #         if candidate in prompt_probe:
+    #             self.probing_recommendation = candidate
+    #             break
+    #
+    #     ### dynamic reflection
+    #     self.preference_analysis = self.prompt_DR()
+
 
 
     ### 候选项集
