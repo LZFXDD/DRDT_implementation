@@ -12,6 +12,8 @@ def extract_title_year(text):
     title = text.split('(')[0].strip()
     if title.endswith(', The'):
         title = "The " + title[:-6]
+    if title.endswith(', A'):
+        title = "A " + title[:-4]
 
     year = text.split('(')[-1].replace(')', '').strip()
 

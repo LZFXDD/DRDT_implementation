@@ -1,9 +1,7 @@
 from langchain.prompts import PromptTemplate
 
 ### first loop: collaborative information
-collaborative_info_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies based on specified terms in the given format.
-
-Here is the format for the user's preferences analysis, along with an example:
+collaborative_info_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies. Based on the user's viewing history, you should generate a preferences analysis in the following format.
 
 Format:
 Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
@@ -19,15 +17,16 @@ Actors: You might have a preference for actors who can deliver strong performanc
 Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
 
 
+Given the following information, update my preferences analysis that adheres to the specified format:
 
 There is another user watched movie {sample_watched_movies}. Given the candidates {candidates}, the answer is {answer}.
 
 I have watched the following list of movies in the past in this order: {watched_movies}.
 
-Here is my preferences analysis:
+Here is my current preferences analysis:
 {preferences_analysis}
 
-Could you update my preferences analysis according to the list provided, taking into account the movie's genres, actors and directors?
+Update my preferences analysis.
 """
 collaborative_agent_prompt = PromptTemplate(
     input_variables=['sample_watched_movies', 'candidates', 'answer', 'watched_movies', 'preferences_analysis'],
@@ -35,9 +34,7 @@ collaborative_agent_prompt = PromptTemplate(
 )
 
 ### divetgent thinking
-divergent_thinkng_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies based on specified terms in the given format.
-
-Here is the format for the user's preferences analysis, along with an example:
+divergent_thinkng_instruction = """You are an AI agent, aiming to analyze the user's preferences for movies. Based on the user's viewing history, you should generate a preferences analysis in the following format.
 
 Format:
 Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
@@ -53,13 +50,14 @@ Actors: You might have a preference for actors who can deliver strong performanc
 Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
 
 
+Given the following information, update my preferences analysis that adheres to the specified format:
 
 I have watched the following list of movies in the past in this order: {watched_movies}.
 
-Here is my preferences analysis:
+Here is my current preferences analysis:
 {preferences_analysis}
 
-Could you update my preferences analysis according to the list provided, taking into account the movie's genres, actors and directors?
+Update my preferences analysis.
 """
 dt_agent_prompt = PromptTemplate(
     input_variables=['watched_movies', 'preferences_analysis',],
@@ -69,12 +67,12 @@ dt_agent_prompt = PromptTemplate(
 ### probing
 probing_instruction = """You are an AI agent, aiming to forecast the next possible movie that I would like to watch.
 
-Here is my preferences analysis:
+Here is my current preferences analysis:
 {preferences_analysis}
 
 Options: {candidates}
 
-Among the options provided, which film would I be inclined to watch next?
+Among the options provided, which film would I be inclined to watch next? Provide only the movie's title.
 """
 probe_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'candidates'],
@@ -84,9 +82,7 @@ probe_agent_prompt = PromptTemplate(
 ### dynamic reflection
 dynamic_reflection_instruction = """As an AI agent, your role is to reflect upon and update the preferences analysis based on the decisions made by the AI agent and the actual selection made by me.
 
-Here is the format for the user's preferences analysis, along with an example:
-
-Format:
+Preferences Analysis Format:
 Based on the list of movies you've watched, I can analyze your preferences in terms of movie's genres, actors and directors.
 The preferences are:
 Genres: ... ( Analysis on the user's preferences in terms of movie's genres )
@@ -100,15 +96,15 @@ Actors: You might have a preference for actors who can deliver strong performanc
 Directors: You tend to favor directors known for their work in the action and science fiction genres, particularly those who are recognized for crafting intense and thought-provoking narratives.
 
 
+Given the following information, update my preferences analysis that adheres to the specified format:
 
-Here is my preferences analysis in terms of genres, actors and directors:
+Here is my current preferences analysis in terms of genres, actors and directors:
 {preferences_analysis}
 
 {recommendation} has been selected by AI agent as the preferred choice from the list of options: {candidates}.
 
-My intended target movie is {answer}, and I've given it a rating of {rating} out of 5.
-Does this align with the previously conducted preferences analysis? And from which perspective will you suggest {answer} to me as a recommendation?
-Update my preferences analysis in the given format:
+My actual selection is {answer}, and I've given it a rating of {rating} out of 5.
+Refine my preferences analysis by comparing it with the current preferences analysis, taking into account the differences between the movie you recommended based on my current preferences analysis and the target movie I ended up watching. The updated preferences analysis should reflect any shifts based on the experience.
 """
 dr_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'recommendation', 'candidates', 'answer', 'rating'],
@@ -116,9 +112,9 @@ dr_agent_prompt = PromptTemplate(
 )
 
 ### prediction
-prediction_instruction = """You are an AI agent, tasked with selecting on movie from the provided list of options that I would enjoy watching.
+prediction_instruction = """You are an AI agent, tasked with selecting on movie from the provided list of options that I would enjoy watching according to my preferences analysis.
 
-Here is my preferences analysis in terms of genres, actors and directors:
+Here is my current preferences analysis in terms of genres, actors and directors:
 {preferences_analysis}
 
 Here is the provided list of options: {candidates}
