@@ -1,4 +1,5 @@
 import pandas as pd
+import random
 
 movies = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\movies.csv', encoding='utf-8')
 ratings = pd.read_csv(r'D:\USTC\实验室\DRDT_implementation\DRDT_implementation\ml-25m\ratings.csv', encoding='utf-8')
@@ -23,18 +24,26 @@ for row in movies.itertuples(index=False):
     movie_info[movieId] = {'title': extract_title_year(title)[0], 'year': extract_title_year(title)[1], 'genres': genres.split('|')}
 
 ### 处理user_history
+test_candidates = dict()
+
 groups = ratings.groupby('userId')
 for name, group in groups:
     group = group.sort_values(by='timestamp')
 
     user_movies = []
     user_ratings = []
+
+    test_info = []
     for _, row in group.iterrows():
         userId, movieId, rating, timestamp = row
         if rating >= 4:
             user_movies.append(int(movieId))
             user_ratings.append(rating)
+        else:
+            test_info.append((int(movieId), rating))
 
     user_history[name] = [user_movies, user_ratings]
-
-print("success")
+    try:
+        test_candidates[name] = random.sample(test_info, 30)
+    except ValueError:
+        test_candidates[name] = test_info

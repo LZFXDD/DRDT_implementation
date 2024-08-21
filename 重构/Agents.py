@@ -3,12 +3,12 @@ import random
 
 from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
-from prompts import collaborative_agent_prompt, dt_agent_prompt, dr_agent_prompt, probe_agent_prompt, predict_agent_prompt
-from data_preprocessing import movie_info, user_history
+from prompts import collaborative_agent_prompt, dt_agent_prompt, dr_agent_prompt, probe_agent_prompt, predict_agent_prompt, predict_NDCG_agent_prompt
+from data_preprocessing import movie_info, user_history, test_candidates
 
 
-### 设置hyperparameter T = 10
-train_times = 10
+### 设置hyperparameter T
+train_times = 25
 
 class DRDT_Agents:
     def __init__(self,
@@ -19,7 +19,7 @@ class DRDT_Agents:
                  DR_agent_prompt: PromptTemplate = dr_agent_prompt,
                  PROBE_agent_prompt: PromptTemplate = probe_agent_prompt,
                  PREDICT_agent_prompt: PromptTemplate = predict_agent_prompt,
-
+                 PREDICT_NDCG_agent_prompt: PromptTemplate = predict_NDCG_agent_prompt,
                  ### LLM
                  DT_llm: AnyOpenAILLM = AnyOpenAILLM(
                     temperature=0,
@@ -48,6 +48,7 @@ class DRDT_Agents:
         self.dr_agent_prompt = DR_agent_prompt
         self.probe_agent_prompt = PROBE_agent_prompt
         self.predict_agent_prompt = PREDICT_agent_prompt
+        self.predict_NDCG_agent_prompt = PREDICT_NDCG_agent_prompt
 
         ### LLM
         self.dt_llm = DT_llm
@@ -69,17 +70,23 @@ class DRDT_Agents:
     def run(self):
         self.scratchpad += f'------------------------------ Loop {self.step_n} ------------------------------'
         self.scratchpad += '\n'
-        self.candidates = self.candidates_selection(5)
+        self.candidates = self.candidates_selection(10)
         self.step()
         self.step_n += 1
 
-        if self.step_n < train_times - 1:
+        if self.step_n < train_times - 15:
             self.run()
         else:
             self.scratchpad += "PREDICTION: \n"
-            self.scratchpad += self.PROBE_build_agent_prompt()
-            self.scratchpad += self.prediction()
-            self.scratchpad += '\n'
+
+            ### 单个预测
+            # self.scratchpad += self.PREDICT_build_agent_prompt()
+            # self.scratchpad += self.prediction()
+            # self.scratchpad += '\n'
+
+            ### NDCG@10
+            self.scratchpad += self.PREDICT_NDCG_build_agent_prompt()
+            self.scratchpad += self.prediction_NDCG()
 
             print(self.scratchpad)
 
@@ -218,6 +225,13 @@ class DRDT_Agents:
             candidates=self.candidates + [movie_info[user_history[self.user_id][0][-1]]['title']]
         )
 
+    def PREDICT_NDCG_build_agent_prompt(self) -> str:
+        return self.predict_NDCG_agent_prompt.format(
+            preferences_analysis=self.preference_analysis,
+            # candidates=self.candidates_selection(20) + [movie_info[index]['title'] for index in user_history[self.user_id][0][-10:]]
+            candidates=random.shuffle([movie_info[index]['title'] for index in user_history[self.user_id][0][-15:]] + [movie_info[index[0]]['title'] for index in test_candidates[self.user_id]])
+        )
+
     ### 调用llm
     def prompt_DT(self) -> str:
         return format_step(self.dt_llm(self.DT_build_agent_prompt()))
@@ -230,6 +244,9 @@ class DRDT_Agents:
 
     def prediction(self) -> str:
         return format_step(self.predict_llm(self.PREDICT_build_agent_prompt()))
+
+    def prediction_NDCG(self) -> str:
+        return format_step(self.probe_llm(self.PREDICT_NDCG_build_agent_prompt()))
 
 ### 字符串处理
 def format_step(step: str) -> str:

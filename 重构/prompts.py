@@ -117,3 +117,19 @@ predict_agent_prompt = PromptTemplate(
     input_variables=['preferences_analysis', 'candidates'],
     template=prediction_instruction
 )
+
+### prediction_NDCG
+prediction_NDCG_instruction = """As an AI agent, your mission is to rank the movies from the given list based on how well they align with my personal preferences for movie selection.
+
+My current preferences analysis is as follows, detailing my inclinations towards genres, actors, and directors:
+{preferences_analysis}
+
+Here is the complete list of movies:
+{candidates}
+
+Please utilize my preferences analysis to select top 10 movies from the candidates and sort them in order of how likely I am to enjoy them, starting with the most suitable title.
+"""
+predict_NDCG_agent_prompt = PromptTemplate(
+    input_variables=['preferences_analysis', 'candidates'],
+    template=prediction_NDCG_instruction,
+)
