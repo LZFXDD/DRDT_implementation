@@ -226,10 +226,12 @@ class DRDT_Agents:
         )
 
     def PREDICT_NDCG_build_agent_prompt(self) -> str:
+        candidates = [movie_info[index]['title'] for index in user_history[self.user_id][0][-15:]] + [movie_info[index[0]]['title'] for index in test_candidates[self.user_id]]
+        random.shuffle(candidates)
         return self.predict_NDCG_agent_prompt.format(
             preferences_analysis=self.preference_analysis,
             # candidates=self.candidates_selection(20) + [movie_info[index]['title'] for index in user_history[self.user_id][0][-10:]]
-            candidates=random.shuffle([movie_info[index]['title'] for index in user_history[self.user_id][0][-15:]] + [movie_info[index[0]]['title'] for index in test_candidates[self.user_id]])
+            candidates=candidates
         )
 
     ### 调用llm
